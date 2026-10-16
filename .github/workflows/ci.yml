@@ -50,6 +50,8 @@ jobs:
           bundle: screenshot-markup.flatpak
           cache-key: flatpak-builder-${{ hashFiles('packaging/flatpak/*.yml') }}
           upload-artifact: true
+          # Mirror metainfo screenshots into the repo like Flathub's builders do
+          mirror-screenshots-url: https://dl.flathub.org/media
       - name: Lint manifest
         run: bash .github/scripts/flatpak-lint.sh manifest "$MANIFEST"
       - name: Lint repo

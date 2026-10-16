@@ -17,7 +17,8 @@ except Exception:
     print("::error::flatpak-builder-lint did not return JSON"); sys.exit(1)
 import os
 known = {"appid-url-not-reachable", "appstream-missing-screenshots",
-         "appstream-screenshots-not-mirrored-in-ostree", "appid-code-hosting-too-few-components"}
+         "appstream-screenshots-not-mirrored-in-ostree", "appid-code-hosting-too-few-components",
+         "appstream-external-screenshot-url"}  # only fixed by a real Flathub build
 if os.environ.get("LINT_STRICT") == "1":
     known = set()  # strict once patsinclair1 is replaced
 errs = set(d.get("errors", []))
