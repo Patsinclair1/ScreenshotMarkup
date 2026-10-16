@@ -25,6 +25,7 @@ parts:
     stage-packages: [tesseract-ocr, tesseract-ocr-eng, python3-gi, python3-gi-cairo, python3-cairo]
     override-build: |
       install -Dm755 markup.py $CRAFT_PART_INSTALL/share/screenshot-markup/markup.py
+      install -Dm644 markup_core.py $CRAFT_PART_INSTALL/share/screenshot-markup/markup_core.py
       mkdir -p $CRAFT_PART_INSTALL/bin
       printf '#!/bin/sh\nexec python3 $SNAP/share/screenshot-markup/markup.py "$@"\n' > $CRAFT_PART_INSTALL/bin/screenshot-markup
       chmod 755 $CRAFT_PART_INSTALL/bin/screenshot-markup
