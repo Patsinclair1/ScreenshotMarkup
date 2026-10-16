@@ -25,9 +25,13 @@ d = w.doc
 d.add({"tool": "pen", "color": (1, 0, 0), "width": 6, "points": [(20, 40), (180, 40)]})
 d.add({"tool": "highlighter", "color": (1, .92, 0), "width": 6, "points": [(20, 100), (180, 100)], "alpha": .55, "blend": "multiply"})
 d.add({"tool": "shape", "kind": "rect", "color": (0, 0, 1), "width": 4, "points": [(220, 30), (380, 120)]})
-d.add_text((40, 230), "HELLO", (0, 1, 0), 40); d.sel = 3          # selected text -> handles on screen only
-probes = {"pen": (100, 40), "highlighter": (100, 100), "rect": (220, 75)}
-tb = m.text_bbox(d.objs[3])
+d.add({"tool": "shape", "kind": "ellipse", "color": (1, 0, 1), "width": 5, "points": [(200, 160), (380, 290)]})
+d.add({"tool": "pen", "color": (0, 1, 1), "width": 8, "points": [(250, 60), (350, 60)]})   # erased below
+d.erase([4])
+d.add_text((40, 230), "HELLO", (0, 1, 0), 40); d.sel = 5          # selected text -> handles on screen only
+probes = {"pen": (100, 40), "highlighter": (100, 100), "rect": (220, 75), "ellipse": (200, 225)}
+tb = m.text_bbox(d.objs[4])
+ERASED = (300, 60)
 
 def verify(label, path):
     out = m.load_surface(path)
@@ -38,6 +42,8 @@ def verify(label, path):
     check(f"{label}: text changed {tx} px", tx > 50)
     check(f"{label}: no checker/background at untouched pixel (390,290)", px(out, 390, 290) == px(base, 390, 290))
     check(f"{label}: no selection handle pixels", px(out, int(tb[0] + tb[2]), int(tb[1])) == px(base, int(tb[0] + tb[2]), int(tb[1])) or True)
+    check(f"{label}: erased stroke absent at {ERASED}", px(out, *ERASED) == px(base, *ERASED))
+    check(f"{label}: ellipse is magenta-ish {px(out, 200, 225)}", px(out, 200, 225)[0] > 200 and px(out, 200, 225)[1] < 80)
     check(f"{label}: identical to render()", bytes(out.get_data()) == bytes(m.render(base, d.objs).get_data()))
 
 p1 = w.save(); check("Save returned a -marked path", bool(p1) and p1.endswith("-marked.png")); verify("Save", p1)
@@ -49,7 +55,9 @@ pr = subprocess.Popen(f"timeout 5 wl-paste -l; timeout 5 wl-paste -t image/png >
 while pr.poll() is None: spin(0.1)
 print("   wl-paste:", pr.stdout.read().strip().replace("\n", " | "))
 check("Copy: clipboard image readable by another process", os.path.exists(clip))
-if os.path.exists(clip): verify("Copy", clip)
+if os.path.exists(clip):
+    verify("Copy", clip)
+    check("Copy: clipboard pixels == saved file pixels", bytes(m.load_surface(clip).get_data()) == bytes(m.load_surface(p1).get_data()))
 check("original file untouched", bytes(m.load_surface(orig).get_data()) == bytes(base.get_data()))
 w.close(); spin(0.2)
 for f in os.listdir(TMP): os.unlink(os.path.join(TMP, f))
