@@ -21,13 +21,13 @@
     </ul>
   </description>
   <launchable type="desktop-id">io.github.patsinclair1.ScreenshotMarkup.desktop</launchable>
-  <url type="homepage">https://github.com/patsinclair1/screenshot-markup</url>
-  <url type="bugtracker">https://github.com/patsinclair1/screenshot-markup/issues</url>
-  <url type="vcs-browser">https://github.com/patsinclair1/screenshot-markup</url>
+  <url type="homepage">https://github.com/patsinclair1/ScreenshotMarkup</url>
+  <url type="bugtracker">https://github.com/patsinclair1/ScreenshotMarkup/issues</url>
+  <url type="vcs-browser">https://github.com/patsinclair1/ScreenshotMarkup</url>
   <screenshots>
     <screenshot type="default">
       <caption>Marking up a screenshot</caption>
-      <image>https://raw.githubusercontent.com/patsinclair1/screenshot-markup/main/screenshots/main.png</image>
+      <image>https://raw.githubusercontent.com/patsinclair1/ScreenshotMarkup/main/screenshots/main.png</image>
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.1"/>
