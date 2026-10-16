@@ -18,7 +18,7 @@ def _px(sf, x, y):
 def _fake_win(m):
     base = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H)
     cr = cairo.Context(base); cr.set_source_rgb(1, 1, 1); cr.paint()
-    doc = m.core.Doc(m.text_bbox)
+    doc = m.Doc()
     doc.add({"tool": "pen", "color": (1, 0, 0), "width": 6, "points": [(10, 20), (150, 20)]})
     doc.add({"tool": "highlighter", "color": (1, .92, 0), "width": 6, "points": [(10, 60), (150, 60)],
              "alpha": .55, "blend": "multiply"})
