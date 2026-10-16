@@ -124,7 +124,7 @@ jobs:
           retention-days: 14
 
   macos:
-    name: macOS (core + Qt tests offscreen)
+    name: macOS (Qt build, mock backend, screenshots)
     runs-on: macos-latest
     timeout-minutes: 15
     steps:
@@ -137,7 +137,18 @@ jobs:
             requirements-ci.txt
             requirements-windows.txt
       - run: python -m pip install -r requirements-ci.txt -r requirements-windows.txt
-      - name: Tests (GTK/D-Bus tests skip with reasons)
+      - name: Tests
         env:
           QT_QPA_PLATFORM: offscreen
         run: python -m pytest -v
+      - name: Screenshots (cocoa, QWidget.grab + screencapture)
+        run: |
+          mkdir -p shots
+          python markup_qt.py --capture-demo shots/markup-macos.png
+          screencapture -x shots/markup-macos-desktop.png || echo "screencapture not permitted on this runner"
+          ls -la shots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ScreenshotMarkup-macos-screenshots
+          path: shots/
+          retention-days: 14
