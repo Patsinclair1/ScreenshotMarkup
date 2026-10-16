@@ -24,7 +24,7 @@ if os.environ.get("LINT_STRICT") == "1":
 errs = set(d.get("errors", []))
 real = errs - known
 for e in sorted(errs & known):
-    print(f"::warning::advisory until patsinclair1 is set and the repo is public: {e}")
+    print(f"::warning::advisory (placeholder or not-yet-public URL): {e}")
 if real:
     for e in sorted(real): print(f"::error::flatpak-builder-lint: {e}")
     sys.exit(1)
