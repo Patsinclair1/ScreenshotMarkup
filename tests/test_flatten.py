@@ -58,3 +58,18 @@ def test_copy_uses_same_flattened_png_as_save(m, monkeypatch):
     monkeypatch.setattr(m, "copy_png_wl", lambda png: got.append(png) or True)
     assert m.Win.copy(w) is True
     assert got and got[0] == w.export_png_bytes()
+
+
+def test_save_copy_also_puts_flattened_png_on_clipboard(m, monkeypatch, tmp_path):
+    """'Save copy' must leave the annotated image on the clipboard, not GNOME's original."""
+    w = _fake_win(m)
+    w.path = str(tmp_path / "shot.png")
+    w.copy = lambda png=None, quiet=False: m.Win.copy(w, png, quiet)
+    got = []
+    monkeypatch.setattr(m, "copy_png_wl", lambda png: got.append(png) or True)
+    out = m.Win.save(w)
+    assert out and out.endswith("-marked.png")
+    with open(out, "rb") as f:
+        saved = f.read()
+    assert got == [saved] and saved == w.export_png_bytes()
+    assert "copied to clipboard" in w.said[-1]

@@ -423,8 +423,8 @@ class Win(Gtk.ApplicationWindow):
         self.str_scale.connect("value-changed", self.on_strength); box.append(self.str_scale)
         for icon, tip, cb in (("edit-undo-symbolic", "Undo (Ctrl+Z)", self.undo),
                               ("edit-copy-symbolic", "Copy (Ctrl+C)", self.copy),
-                              ("document-save-symbolic", "Save copy (Ctrl+S)", self.save),
-                              ("document-save-as-symbolic", "Save as… (Ctrl+Shift+S)", self.save_as)):
+                              ("document-save-symbolic", "Save copy + copy to clipboard (Ctrl+S)", self.save),
+                              ("document-save-as-symbolic", "Save as… + copy to clipboard (Ctrl+Shift+S)", self.save_as)):
             b = Gtk.Button(icon_name=icon, tooltip_text=tip, focusable=False); b.connect("clicked", lambda _b, c=cb: c()); box.append(b)
 
         self.conf = load_conf()
@@ -798,12 +798,18 @@ class Win(Gtk.ApplicationWindow):
         buf = io.BytesIO(); self.export_surface().write_to_png(buf); return buf.getvalue()
 
     def save(self, path=None):
+        """Write the flattened image AND put the same bytes on the clipboard.
+
+        Users press "Save copy" and then paste; without the clipboard step the paste
+        gave GNOME's own screenshot clipboard entry (the original, no drawings)."""
         path = path or default_save_path(self.path)
         try:
-            self.export_surface().write_to_png(path)
+            png = self.export_png_bytes()
+            with open(path, "wb") as f: f.write(png)
         except Exception as e:
             self.say(f"Save failed: {e}"); print("save failed:", e, file=sys.stderr); return None
-        self.say(f"Saved {os.path.basename(path)}"); return path
+        copied = self.copy(png, quiet=True)
+        self.say(f"Saved {os.path.basename(path)}" + (" and copied to clipboard" if copied else "")); return path
 
     def save_to_gfile(self, f):
         """Save As target. Works for local paths and portal/GVfs URIs (no local path)."""
@@ -812,8 +818,10 @@ class Win(Gtk.ApplicationWindow):
             if path:
                 if not path.lower().endswith(".png"): path += ".png"
                 return self.save(path)
-            f.replace_contents(self.export_png_bytes(), None, False, Gio.FileCreateFlags.REPLACE_DESTINATION, None)
-            self.say(f"Saved {f.get_basename()}"); return f.get_uri()
+            png = self.export_png_bytes()
+            f.replace_contents(png, None, False, Gio.FileCreateFlags.REPLACE_DESTINATION, None)
+            copied = self.copy(png, quiet=True)
+            self.say(f"Saved {f.get_basename()}" + (" and copied to clipboard" if copied else "")); return f.get_uri()
         except Exception as e:
             self.say(f"Save failed: {e}"); print("save-as failed:", e, file=sys.stderr); return None
 
@@ -827,7 +835,7 @@ class Win(Gtk.ApplicationWindow):
             if f is not None: self.save_to_gfile(f)
         d.save(self, None, cb)
 
-    def copy(self):
+    def copy(self, png=None, quiet=False):
         """Copy the SAME flattened image Save writes (export_png_bytes) to the clipboard.
 
         GTK's Gdk.Clipboard.set_content() was silently not taking ownership on
@@ -837,11 +845,12 @@ class Win(Gtk.ApplicationWindow):
         back to a Gdk.Texture built from the flattened PNG bytes.
         """
         try:
-            png = self.export_png_bytes()
+            png = png if png is not None else self.export_png_bytes()
         except Exception as e:
             self.say(f"Copy failed: {e}"); print("copy failed:", e, file=sys.stderr); return False
         if copy_png_wl(png):
-            self.say("Copied to clipboard"); return True
+            if not quiet: self.say("Copied to clipboard")
+            return True
         try:
             tex = Gdk.Texture.new_from_bytes(GLib.Bytes.new(png))
             prov = Gdk.ContentProvider.new_union([
@@ -849,7 +858,8 @@ class Win(Gtk.ApplicationWindow):
                 Gdk.ContentProvider.new_for_value(tex)])
             self.get_display().get_clipboard().set_content(prov)
             self._clip_provider = prov
-            self.say("Copied to clipboard"); return True
+            if not quiet: self.say("Copied to clipboard")
+            return True
         except Exception as e:
             self.say(f"Copy failed: {e}"); print("copy failed:", e, file=sys.stderr); return False
 
