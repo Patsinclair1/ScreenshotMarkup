@@ -863,10 +863,12 @@ def copy_png_wl(png):
     try:
         with tempfile.TemporaryFile() as f:
             f.write(png); f.seek(0)
+            # wl-copy forks a child that keeps serving the selection; it must not
+            # inherit a pipe from us or run() would wait for that child forever.
             r = subprocess.run([exe, "--type", "image/png"], stdin=f, timeout=10,
-                               stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
         if r.returncode != 0:
-            print("wl-copy failed:", r.stderr.decode(errors="replace"), file=sys.stderr)
+            print("wl-copy failed: exit", r.returncode, file=sys.stderr)
         return r.returncode == 0
     except Exception as e:
         print("wl-copy failed:", e, file=sys.stderr); return False
