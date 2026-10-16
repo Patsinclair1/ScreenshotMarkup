@@ -1,6 +1,15 @@
 {
   "uuid": "screenshot-markup@paddy.dev",
   "name": "Screenshot Markup: Edit button",
-  "description": "Adds an Edit action to GNOME's 'Screenshot captured' notification that opens the screenshot in Screenshot Markup.",
-  "shell-version": ["50"]
+  "description": "Adds an Edit action to GNOME's 'Screenshot captured' notification that opens the screenshot in Screenshot Markup (native install or the Flatpak io.github.patsinclair1.ScreenshotMarkup).",
+  "shell-version": [
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50"
+  ],
+  "version-name": "1.0.0",
+  "url": "https://github.com/Patsinclair1/ScreenshotMarkup"
 }

@@ -40,6 +40,7 @@
   <categories><category>Graphics</category></categories>
   <keywords><keyword>screenshot</keyword><keyword>annotate</keyword><keyword>highlight</keyword><keyword>OCR</keyword></keywords>
   <releases>
+    <release version="1.0.0" date="2026-10-16"><description><p>First Linux download: pen, highlighter, shapes, text, eraser, OCR transcript with links, Save/Save as/Copy put the annotated image on the clipboard.</p></description></release>
     <release version="0.1.0" date="2026-10-16"><description><p>First public release.</p></description></release>
   </releases>
 </component>
