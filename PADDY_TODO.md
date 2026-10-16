@@ -1,7 +1,7 @@
 # Paddy's to-do list (nothing has been submitted or signed up for)
 
 ## 1. Decide identity (blocks everything else)
-- [x] **Code host: github.com/patsinclair1** (repos still to create). Create a GitHub user or org (free) and public repos, e.g. `patsinclair1/screenshot-markup`
+- [x] **Code host: github.com/patsinclair1** (repos created). Public repos: `patsinclair1/ScreenshotMarkup`
       and `patsinclair1/edgetune`. Placeholders already replaced with `patsinclair1` (app IDs, metainfo URLs,
       the EGO uuid `screenshot-markup@patsinclair1.github.io`, the extension's `APP_IDS`). Flathub requires the
       app ID to map to a domain or code-host account you control (`io.github.<user>` ↔ github.com/<user>),
