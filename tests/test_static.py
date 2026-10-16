@@ -6,7 +6,8 @@ APP_ID = "io.github.patsinclair1.ScreenshotMarkup"
 
 
 def test_markup_byte_compiles(tmp_path):
-    py_compile.compile(os.path.join(ROOT, "markup.py"), cfile=str(tmp_path / "m.pyc"), doraise=True)
+    for f in ("markup.py", "markup_core.py", "markup_qt.py", "markup_tray.py"):
+        py_compile.compile(os.path.join(ROOT, f), cfile=str(tmp_path / "m.pyc"), doraise=True)
 
 
 def test_metainfo_well_formed():

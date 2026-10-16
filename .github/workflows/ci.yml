@@ -2,13 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, windows-port]
     paths:
       - "*.py"
       - "tests/**"
       - "packaging/**"
       - "pytest.ini"
       - "requirements-ci.txt"
+      - "requirements-windows.txt"
       - ".github/**"
   pull_request:
     paths:
@@ -17,6 +18,7 @@ on:
       - "packaging/**"
       - "pytest.ini"
       - "requirements-ci.txt"
+      - "requirements-windows.txt"
       - ".github/**"
   workflow_dispatch:
 
@@ -77,23 +79,65 @@ jobs:
       - name: Validate desktop file
         run: desktop-file-validate "packaging/data/$APP_ID.desktop"
 
-  portable:
-    name: Portable smoke (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+  windows:
+    name: Windows (PySide6 port, PyInstaller exe, screenshots)
+    runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: requirements-ci.txt
-      - run: python -m pip install -r requirements-ci.txt
-      - name: Byte-compile
-        run: python -m compileall -q markup.py tests
+          cache-dependency-path: |
+            requirements-ci.txt
+            requirements-windows.txt
+      - name: Install
+        run: python -m pip install -r requirements-ci.txt -r requirements-windows.txt pyinstaller pillow
+      - name: Tests (GTK tests skip; core + Qt run)
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest -v
+      - name: Windows OCR probe (Windows.Media.Ocr, advisory)
+        continue-on-error: true
+        run: |
+          $env:QT_QPA_PLATFORM = "offscreen"
+          python -c "import markup_qt as m, tempfile, os; from PySide6.QtWidgets import QApplication; a=QApplication([]); p=m.make_demo_image(os.path.join(tempfile.gettempdir(),'ocr.png')); r=m.ocr_winrt(p); print(len(r['words']),'words', r['links'])"
+      - name: Build exe
+        run: ./packaging/windows/build.ps1
+      - name: Screenshot from the built exe (real desktop session)
+        run: |
+          New-Item -ItemType Directory -Force shots | Out-Null
+          $env:QT_QPA_PLATFORM = "windows"
+          $p = Start-Process dist\ScreenshotMarkup.exe -ArgumentList "--capture-demo", "$PWD\shots\markup-windows.png" -PassThru -Wait
+          if ($p.ExitCode -ne 0 -or -not (Test-Path shots\markup-windows.png)) { throw "capture failed ($($p.ExitCode))" }
+          Get-ChildItem shots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ScreenshotMarkup-windows-exe
+          path: dist/ScreenshotMarkup.exe
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ScreenshotMarkup-windows-screenshots
+          path: shots/
+          retention-days: 14
+
+  macos:
+    name: macOS (core + Qt tests offscreen)
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements-ci.txt
+            requirements-windows.txt
+      - run: python -m pip install -r requirements-ci.txt -r requirements-windows.txt
       - name: Tests (GTK/D-Bus tests skip with reasons)
+        env:
+          QT_QPA_PLATFORM: offscreen
         run: python -m pytest -v

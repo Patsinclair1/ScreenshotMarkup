@@ -67,6 +67,7 @@ modules:
     buildsystem: simple
     build-commands:
       - install -Dm755 markup.py /app/share/screenshot-markup/markup.py
+      - install -Dm644 markup_core.py /app/share/screenshot-markup/markup_core.py
       - sed -i 's/^APP_ID = .*/APP_ID = "io.github.patsinclair1.ScreenshotMarkup"/' /app/share/screenshot-markup/markup.py
       - printf '#!/bin/sh\nexport TESSDATA_PREFIX=/app/share/tessdata\nexec python3 /app/share/screenshot-markup/markup.py "$@"\n' > /app/bin/screenshot-markup
       - chmod 755 /app/bin/screenshot-markup

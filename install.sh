@@ -4,6 +4,7 @@ cd "$(dirname "$0")"
 B=~/.local/bin; A=~/.local/share/applications; U=~/.config/systemd/user; L=~/.local/share/screenshot-markup
 mkdir -p "$B" "$A" "$U" "$L"
 install -m755 markup.py "$L/markup.py"
+install -m644 markup_core.py "$L/markup_core.py"
 printf '#!/bin/sh\nexec python3 %s/markup.py "$@"\n' "$L" > "$B/screenshot-markup"; chmod 755 "$B/screenshot-markup"
 cat > "$A/dev.paddy.ScreenshotMarkup.desktop" <<D
 [Desktop Entry]

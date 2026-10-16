@@ -8,7 +8,11 @@ import cairo, warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 APP_ID = "dev.paddy.ScreenshotMarkup"
-HL_ALPHA = 0.55
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import markup_core as core
+from markup_core import (HL_ALPHA, HANDLE, OPP, ZOOM_MIN, ZOOM_MAX, BG_PRESETS, CONF_PATH, constrain, arrow_head,
+                         shape_points, corners, find_urls, normalise_url, link_at, default_save_path, load_conf, save_conf)
+_seg_dist = core.seg_dist
 
 
 def load_surface(path):
@@ -20,71 +24,20 @@ def load_surface(path):
     return surf
 
 
-def constrain(kind, p0, p1):
-    """Shift: square / circle for rect+ellipse, 45-degree snaps for line+arrow."""
-    dx, dy = p1[0] - p0[0], p1[1] - p0[1]
-    if kind in ("rect", "ellipse"):
-        m = max(abs(dx), abs(dy))
-        return (p0[0] + math.copysign(m, dx or 1), p0[1] + math.copysign(m, dy or 1))
-    ang = round(math.atan2(dy, dx) / (math.pi / 4)) * (math.pi / 4); d = math.hypot(dx, dy)
-    return (p0[0] + d * math.cos(ang), p0[1] + d * math.sin(ang))
-
-
-def arrow_head(p0, p1, w):
-    L = max(10, w * 4); a = math.atan2(p1[1] - p0[1], p1[0] - p0[0])
-    return [(p1[0] - L * math.cos(a - 0.45), p1[1] - L * math.sin(a - 0.45)), p1,
-            (p1[0] - L * math.cos(a + 0.45), p1[1] - L * math.sin(a + 0.45))]
-
-
-def shape_points(s):
-    """Outline polylines of an annotation in image coords (used for eraser hit tests)."""
-    t = s["tool"]; pts = s["points"]
-    if t == "shape":
-        (x0, y0), (x1, y1) = pts[0], pts[-1]; k = s["kind"]
-        if k == "rect": return [[(x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)]]
-        if k == "ellipse":
-            cx, cy, rx, ry = (x0 + x1) / 2, (y0 + y1) / 2, abs(x1 - x0) / 2, abs(y1 - y0) / 2
-            return [[(cx + rx * math.cos(i * math.pi / 24), cy + ry * math.sin(i * math.pi / 24)) for i in range(49)]]
-        if k == "arrow": return [[pts[0], pts[-1]], arrow_head(pts[0], pts[-1], s["width"])]
-        return [[pts[0], pts[-1]]]
-    return [pts]
-
-
-def _seg_dist(p, a, b):
-    ax, ay = a; bx, by = b; px, py = p; vx, vy = bx - ax, by - ay
-    L = vx * vx + vy * vy
-    t = 0 if L == 0 else max(0, min(1, ((px - ax) * vx + (py - ay) * vy) / L))
-    return math.hypot(px - ax - t * vx, py - ay - t * vy)
-
-
 def touches(s, p, r):
-    """Does an eraser of radius r at point p touch annotation s?"""
-    if s["tool"] == "text":
-        x, y, w, h = text_bbox(s)
-        return x - r <= p[0] <= x + w + r and y - r <= p[1] <= y + h + r
-    half = s["width"] * (2 if s["tool"] == "highlighter" else 0.5)
-    for poly in shape_points(s):
-        if len(poly) == 1 and math.hypot(p[0] - poly[0][0], p[1] - poly[0][1]) <= r + half: return True
-        for a, b in zip(poly, poly[1:]):
-            if _seg_dist(p, a, b) <= r + half: return True
-    return False
+    return core.touches(s, p, r, text_bbox)
 
 
 def pick_blend(base, pts):
     """Mean luminance of the image under the stroke -> 'multiply' (light) or 'screen' (dark)."""
     try:
-        base.flush(); d = base.get_data(); st = base.get_stride(); W, H = base.get_width(), base.get_height()
-        step = max(1, len(pts) // 200); tot = n = 0
-        for x, y in pts[::step]:
-            for ox in (-3, 0, 3):
-                for oy in (-3, 0, 3):
-                    xi, yi = int(x) + ox, int(y) + oy
-                    if 0 <= xi < W and 0 <= yi < H:
-                        i = yi * st + xi * 4
-                        tot += 0.0722 * d[i] + 0.7152 * d[i + 1] + 0.2126 * d[i + 2]; n += 1
-        return "screen" if n and tot / n < 110 else "multiply"
+        base.flush(); d = base.get_data(); st = base.get_stride()
     except Exception:
         return "multiply"
+    def sample(x, y):
+        i = y * st + x * 4
+        return d[i + 2], d[i + 1], d[i]          # cairo ARGB32 is BGRA in memory
+    return core.pick_blend_from(sample, base.get_width(), base.get_height(), pts)
 
 
 def draw_stroke(cr, s):
@@ -152,14 +105,6 @@ def render(base, strokes):
     return out
 
 
-def default_save_path(path):
-    root, _ = os.path.splitext(path)
-    cand = root + "-marked.png"; n = 2
-    while os.path.exists(cand):
-        cand = f"{root}-marked-{n}.png"; n += 1
-    return cand
-
-
 def surface_to_texture(surf):
     import tempfile
     fd, tmp = tempfile.mkstemp(suffix=".png"); os.close(fd)
@@ -168,9 +113,7 @@ def surface_to_texture(surf):
     return tex
 
 
-import copy
 _scratch = cairo.Context(cairo.ImageSurface(cairo.FORMAT_ARGB32, 1, 1))
-HANDLE = 8
 
 
 def text_bbox(o):
@@ -180,64 +123,9 @@ def text_bbox(o):
     return (x, y - fe[0], max(te.x_advance, 4), fe[0] + fe[1])
 
 
-class Doc:
-    """Objects + snapshot undo. Every user action = one push()."""
+class Doc(core.Doc):
     def __init__(self):
-        self.objs = []; self.hist = []; self.sel = None
-    def push(self):
-        self.hist.append((copy.deepcopy(self.objs), self.sel))
-    def undo(self):
-        if self.hist:
-            self.objs, self.sel = self.hist.pop()
-            if self.sel is not None and self.sel >= len(self.objs): self.sel = None
-    def add(self, o):
-        self.push(); self.objs.append(o); return len(self.objs) - 1
-    def add_text(self, pt, text, color, size):
-        return self.add({"tool": "text", "color": color, "size": size, "points": [pt], "text": text})
-    def hit(self, x, y):
-        for i in range(len(self.objs) - 1, -1, -1):
-            o = self.objs[i]
-            if o["tool"] == "text":
-                bx, by, bw, bh = text_bbox(o)
-                if bx - 4 <= x <= bx + bw + 4 and by - 4 <= y <= by + bh + 4: return i
-        return None
-    def handle_at(self, x, y, tol=HANDLE):
-        if self.sel is None: return None
-        for name, (hx, hy) in corners(text_bbox(self.objs[self.sel])).items():
-            if abs(x - hx) <= tol and abs(y - hy) <= tol: return name
-        return None
-    def move(self, i, dx, dy, push=True):
-        if push: self.push()
-        x, y = self.objs[i]["points"][0]; self.objs[i]["points"][0] = (x + dx, y + dy)
-    def resize(self, i, handle, nx, ny, base=None, push=True):
-        """Drag corner `handle` to (nx,ny); opposite corner stays fixed; font scales."""
-        if push: self.push()
-        o = self.objs[i]; b = base or copy.deepcopy(o)
-        c = corners(text_bbox(b)); opp = c[OPP[handle]]; old = c[handle]
-        od = math.hypot(old[0] - opp[0], old[1] - opp[1]) or 1
-        nd = math.hypot(nx - opp[0], ny - opp[1])
-        o["size"] = max(4.0, b["size"] * nd / od); o["points"][0] = b["points"][0]
-        nb = corners(text_bbox(o))[OPP[handle]]
-        x, y = o["points"][0]; o["points"][0] = (x + opp[0] - nb[0], y + opp[1] - nb[1])
-    def edit(self, i, text):
-        self.push(); self.objs[i]["text"] = text
-    def erase(self, idxs):
-        """Remove several annotations as ONE undo step. Never touches the image."""
-        idxs = sorted(set(idxs), reverse=True)
-        if not idxs: return
-        self.push()
-        for i in idxs: del self.objs[i]
-        self.sel = None
-    def hits_along(self, pts, r):
-        return {i for i, o in enumerate(self.objs) if any(touches(o, p, r) for p in pts)}
-    def delete(self, i):
-        self.push(); del self.objs[i]; self.sel = None
-
-
-OPP = {"nw": "se", "se": "nw", "ne": "sw", "sw": "ne"}
-def corners(b):
-    x, y, w, h = b
-    return {"nw": (x, y), "ne": (x + w, y), "sw": (x, y + h), "se": (x + w, y + h)}
+        super().__init__(text_bbox)
 
 
 def draw_selection(cr, o, scale=1.0):
@@ -260,24 +148,6 @@ def find_tesseract():
         if c and os.access(c, os.X_OK): return c
     return None
 
-URL_RE = re.compile(r"""(?ix)\b(
-    (?:https?://|www\.)[^\s<>"'()]+ |
-    (?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+
-    (?:com|org|net|io|dev|co|uk|ai|app|gov|edu|me|sh|xyz|tv|gg|info|biz|us|eu|de|fr|so|ly|to)
-    (?::\d+)?(?:/[^\s<>"'()]*)?
-)""")
-
-def find_urls(text):
-    out = []
-    for m in URL_RE.finditer(text):
-        u = m.group(1).rstrip(".,;:!?)]}")
-        if "@" in text[max(0, m.start() - 1):m.start()]: continue   # skip emails
-        out.append(u)
-    return out
-
-def normalise_url(u):
-    return u if re.match(r"(?i)https?://", u) else "https://" + u
-
 def launch_uri(uri, parent=None):
     """Open in default browser. Module-level so tests can mock it."""
     Gtk.UriLauncher(uri=uri).launch(parent, None, None)
@@ -297,32 +167,7 @@ def run_ocr(path, scale=2):
     finally:
         os.unlink(tmp)
     if out.returncode != 0: raise RuntimeError("tesseract failed: " + out.stderr.strip()[:200])
-    words, lines = [], {}
-    for row in out.stdout.splitlines()[1:]:
-        f = row.split("\t")
-        if len(f) < 12 or f[0] != "5" or not f[11].strip(): continue
-        try: conf = float(f[10])
-        except ValueError: continue
-        if conf < 30: continue
-        box = tuple(int(v) / scale for v in f[6:10])
-        w = {"text": f[11].strip(), "box": box}; words.append(w)
-        lines.setdefault((int(f[2]), int(f[3]), int(f[4])), []).append(w)
-    line_objs = []
-    for k in sorted(lines):
-        ws = lines[k]; x0 = min(w["box"][0] for w in ws); y0 = min(w["box"][1] for w in ws)
-        x1 = max(w["box"][0] + w["box"][2] for w in ws); y1 = max(w["box"][1] + w["box"][3] for w in ws)
-        line_objs.append({"text": " ".join(w["text"] for w in ws), "box": (x0, y0, x1 - x0, y1 - y0)})
-    links = []
-    for w in words:
-        for u in find_urls(w["text"]):
-            links.append({"url": normalise_url(u), "label": u, "box": w["box"]})
-    return {"words": words, "lines": line_objs, "text": "\n".join(l["text"] for l in line_objs), "links": links}
-
-def link_at(ocr, pt, pad=3):
-    for l in (ocr or {}).get("links", []):
-        x, y, w, h = l["box"]
-        if x - pad <= pt[0] <= x + w + pad and y - pad <= pt[1] <= y + h + pad: return l
-    return None
+    return core.parse_tesseract_tsv(out.stdout, scale)
 
 def draw_ocr_overlay(cr, ocr, scale=1.0):
     """Display-only. Never called by render()."""
@@ -341,23 +186,6 @@ def draw_ocr_overlay(cr, ocr, scale=1.0):
 
 # ---------------- config + zoom ----------------
 import json
-CONF_PATH = os.path.expanduser("~/.config/screenshot-markup/config.json")
-ZOOM_MIN, ZOOM_MAX = 0.10, 8.0
-BG_PRESETS = {"light": (0.92, 0.92, 0.92), "dark": (0.16, 0.16, 0.18), "checker": None}
-
-def load_conf():
-    try:
-        with open(CONF_PATH) as f: return json.load(f)
-    except Exception: return {}
-
-def save_conf(c):
-    try:
-        os.makedirs(os.path.dirname(CONF_PATH), exist_ok=True)
-        tmp = CONF_PATH + ".tmp"
-        with open(tmp, "w") as f: json.dump(c, f, indent=1)
-        os.replace(tmp, CONF_PATH)
-    except Exception as e: print("config save failed:", e, file=sys.stderr)
-
 def paint_background(cr, w, h, bg):
     """Canvas backdrop outside the image. Display only; render() never calls it."""
     if bg == "checker" or bg is None:
