@@ -685,7 +685,8 @@ class Win(Gtk.ApplicationWindow):
 def copy_png_wl(png):
     """Put PNG bytes on the Wayland clipboard with wl-copy. True on success."""
     import shutil, subprocess, tempfile
-    exe = shutil.which("wl-copy")
+    # Flatpak bundles wl-clipboard in /app/bin; native installs use the system one.
+    exe = next((p for p in ("/app/bin/wl-copy",) if os.access(p, os.X_OK)), None) or shutil.which("wl-copy")
     if not exe or not os.environ.get("WAYLAND_DISPLAY"):
         return False
     try:
