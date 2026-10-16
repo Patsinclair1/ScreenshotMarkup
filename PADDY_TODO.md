@@ -1,9 +1,9 @@
 # Paddy's to-do list (nothing has been submitted or signed up for)
 
 ## 1. Decide identity (blocks everything else)
-- [ ] **Code host / owner.** Create a GitHub user or org (free) and public repos, e.g. `OWNER/screenshot-markup`
-      and `OWNER/edgetune`. Then replace every `OWNER` / `owner` placeholder (app IDs, metainfo URLs,
-      the EGO uuid `screenshot-markup@OWNER.github.io`, the extension's `APP_IDS`). Flathub requires the
+- [x] **Code host: github.com/patsinclair1** (repos still to create). Create a GitHub user or org (free) and public repos, e.g. `patsinclair1/screenshot-markup`
+      and `patsinclair1/edgetune`. Placeholders already replaced with `patsinclair1` (app IDs, metainfo URLs,
+      the EGO uuid `screenshot-markup@patsinclair1.github.io`, the extension's `APP_IDS`). Flathub requires the
       app ID to map to a domain or code-host account you control (`io.github.<user>` ↔ github.com/<user>),
       and verifies it. A domain you own also works (e.g. `com.patchworkfix.ScreenshotMarkup`).
 - [ ] **Push the code** to those repos (I didn't push anything) and switch the Flatpak `dir` sources to `git` tag + commit.
@@ -22,7 +22,7 @@
 
 ## 3. Signing
 - [ ] **Flathub:** none needed. Flathub builds and signs.
-- [ ] **EGO:** none; upload the zip `packaging/ego/screenshot-markup@OWNER.github.io.shell-extension.zip` after renaming the uuid.
+- [ ] **EGO:** none; upload the zip `packaging/ego/screenshot-markup@patsinclair1.github.io.shell-extension.zip` after renaming the uuid.
 - [ ] **MSIX:** Store submissions are re-signed by Microsoft (no cert to buy). Only sideloaded/direct MSIX needs a
       code-signing certificate (paid OV cert, or Azure Trusted Signing ≈ US$10/month). The MSIX `Publisher` must
       match your Partner Center publisher ID.
@@ -40,6 +40,6 @@
       are unofficial; keep them off in store builds.
 
 ## 5. Before submitting
-- [ ] Run `flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest <yml>` and `... repo repo` after OWNER is filled in.
+- [ ] Run `flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest <yml>` and `... repo repo` after patsinclair1 is filled in.
 - [ ] Add 1–2 more screenshots per app (Flathub likes several), hosted at the raw GitHub URLs in metainfo.
 - [ ] Log out/in test of the EGO extension version together with the Flatpak app.

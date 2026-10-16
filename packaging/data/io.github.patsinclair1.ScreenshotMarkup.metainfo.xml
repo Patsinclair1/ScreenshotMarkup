@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- TODO(paddy): replace OWNER with your GitHub user/org (or a domain you control) everywhere. -->
+<!-- TODO(paddy): replace patsinclair1 with your GitHub user/org (or a domain you control) everywhere. -->
 <component type="desktop-application">
-  <id>io.github.OWNER.ScreenshotMarkup</id>
+  <id>io.github.patsinclair1.ScreenshotMarkup</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <name>Screenshot Markup</name>
   <summary>Draw, highlight and read text on screenshots</summary>
-  <developer id="io.github.owner">
-    <name>OWNER</name>
+  <developer id="io.github.patsinclair1">
+    <name>patsinclair1</name>
   </developer>
   <description>
     <p>A small, fast annotator for screenshots. Open a capture, mark it up, then save a copy or copy it straight to the clipboard.</p>
@@ -20,14 +20,14 @@
       <li>Zoom, pan, undo, and a choice of canvas background</li>
     </ul>
   </description>
-  <launchable type="desktop-id">io.github.OWNER.ScreenshotMarkup.desktop</launchable>
-  <url type="homepage">https://github.com/OWNER/screenshot-markup</url>
-  <url type="bugtracker">https://github.com/OWNER/screenshot-markup/issues</url>
-  <url type="vcs-browser">https://github.com/OWNER/screenshot-markup</url>
+  <launchable type="desktop-id">io.github.patsinclair1.ScreenshotMarkup.desktop</launchable>
+  <url type="homepage">https://github.com/patsinclair1/screenshot-markup</url>
+  <url type="bugtracker">https://github.com/patsinclair1/screenshot-markup/issues</url>
+  <url type="vcs-browser">https://github.com/patsinclair1/screenshot-markup</url>
   <screenshots>
     <screenshot type="default">
       <caption>Marking up a screenshot</caption>
-      <image>https://raw.githubusercontent.com/OWNER/screenshot-markup/main/screenshots/main.png</image>
+      <image>https://raw.githubusercontent.com/patsinclair1/screenshot-markup/main/screenshots/main.png</image>
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.1"/>

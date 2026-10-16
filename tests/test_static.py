@@ -2,7 +2,7 @@
 import json, os, py_compile, xml.etree.ElementTree as ET
 from conftest import ROOT
 
-APP_ID = "io.github.OWNER.ScreenshotMarkup"
+APP_ID = "io.github.patsinclair1.ScreenshotMarkup"
 
 
 def test_markup_byte_compiles(tmp_path):

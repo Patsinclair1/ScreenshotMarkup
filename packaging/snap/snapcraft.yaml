@@ -28,5 +28,5 @@ parts:
       mkdir -p $CRAFT_PART_INSTALL/bin
       printf '#!/bin/sh\nexec python3 $SNAP/share/screenshot-markup/markup.py "$@"\n' > $CRAFT_PART_INSTALL/bin/screenshot-markup
       chmod 755 $CRAFT_PART_INSTALL/bin/screenshot-markup
-      install -Dm644 packaging/data/io.github.OWNER.ScreenshotMarkup.svg $CRAFT_PART_INSTALL/meta/gui/icon.svg
+      install -Dm644 packaging/data/io.github.patsinclair1.ScreenshotMarkup.svg $CRAFT_PART_INSTALL/meta/gui/icon.svg
     stage: [bin, share, usr, meta]

@@ -1,7 +1,7 @@
 # Flathub manifest for Screenshot Markup.
-# TODO(paddy): replace OWNER with your GitHub user/org (must match a code host or domain you control).
+# TODO(paddy): replace patsinclair1 with your GitHub user/org (must match a code host or domain you control).
 # For Flathub submission, switch the app module source from `dir` to a `git` source with tag + commit.
-id: io.github.OWNER.ScreenshotMarkup
+id: io.github.patsinclair1.ScreenshotMarkup
 runtime: org.gnome.Platform
 runtime-version: '50'
 sdk: org.gnome.Sdk
@@ -67,7 +67,7 @@ modules:
     buildsystem: simple
     build-commands:
       - install -Dm755 markup.py /app/share/screenshot-markup/markup.py
-      - sed -i 's/^APP_ID = .*/APP_ID = "io.github.OWNER.ScreenshotMarkup"/' /app/share/screenshot-markup/markup.py
+      - sed -i 's/^APP_ID = .*/APP_ID = "io.github.patsinclair1.ScreenshotMarkup"/' /app/share/screenshot-markup/markup.py
       - printf '#!/bin/sh\nexport TESSDATA_PREFIX=/app/share/tessdata\nexec python3 /app/share/screenshot-markup/markup.py "$@"\n' > /app/bin/screenshot-markup
       - chmod 755 /app/bin/screenshot-markup
       - install -Dm644 packaging/data/${FLATPAK_ID}.desktop -t /app/share/applications

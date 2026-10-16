@@ -1,7 +1,7 @@
 # Store listing: Screenshot Markup
 
 - **Name:** Screenshot Markup (TODO(paddy): confirm; check it's free on Flathub/Snap/MS Store)
-- **App ID:** `io.github.OWNER.ScreenshotMarkup` (OWNER = your GitHub user/org)
+- **App ID:** `io.github.patsinclair1.ScreenshotMarkup` (patsinclair1 = your GitHub user/org)
 - **Summary (≤35 chars):** Draw, highlight and read text on screenshots
 - **Category:** Graphics (Flathub/freedesktop: Graphics;2DGraphics;RasterGraphics) · MS Store: Photo & video · Mac App Store: Graphics & Design
 - **Keywords:** screenshot, annotate, markup, highlight, draw, arrow, OCR, transcript, text recognition

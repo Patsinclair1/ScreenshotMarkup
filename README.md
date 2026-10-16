@@ -13,8 +13,8 @@ Needs PyGObject with GTK 4, pycairo, and optionally `tesseract` on PATH for the 
 ## Packaging (see `packaging/`)
 | Target | File | Status |
 |---|---|---|
-| Flathub | `packaging/flatpak/io.github.OWNER.ScreenshotMarkup.yml` | builds locally (see below) |
-| GNOME Extensions | `packaging/ego/screenshot-markup@OWNER.github.io.shell-extension.zip` | packed, upload by hand |
+| Flathub | `packaging/flatpak/io.github.patsinclair1.ScreenshotMarkup.yml` | builds locally (see below) |
+| GNOME Extensions | `packaging/ego/screenshot-markup@patsinclair1.github.io.shell-extension.zip` | packed, upload by hand |
 | Snap (optional) | `packaging/snap/snapcraft.yaml` | written, not built |
 | Metainfo / desktop / icons | `packaging/data/` | validated with appstreamcli + desktop-file-validate |
 
@@ -22,8 +22,8 @@ Build the Flatpak locally:
 
     cd packaging/flatpak
     flatpak run org.flatpak.Builder --user --force-clean --install-deps-from=flathub \
-        --install build io.github.OWNER.ScreenshotMarkup.yml
-    flatpak run io.github.OWNER.ScreenshotMarkup
+        --install build io.github.patsinclair1.ScreenshotMarkup.yml
+    flatpak run io.github.patsinclair1.ScreenshotMarkup
 
 ### Sandbox notes
 - **GNOME Shell extension** can't ship in a Flatpak; it goes to extensions.gnome.org separately. The EGO

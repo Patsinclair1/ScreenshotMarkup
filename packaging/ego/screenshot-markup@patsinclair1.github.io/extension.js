@@ -12,7 +12,7 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 const shellGettext = s => Gettext.domain('gnome-shell').gettext(s);
 const APP = GLib.build_filenamev([GLib.get_home_dir(), '.local', 'bin', 'screenshot-markup']);
 // TODO(paddy): keep in sync with the Flatpak app ID.
-const APP_IDS = ['io.github.OWNER.ScreenshotMarkup.desktop', 'dev.paddy.ScreenshotMarkup.desktop'];
+const APP_IDS = ['io.github.patsinclair1.ScreenshotMarkup.desktop', 'dev.paddy.ScreenshotMarkup.desktop'];
 
 function launchEditor(file) {
     // Prefer the installed app (Flatpak or native) through its desktop file.

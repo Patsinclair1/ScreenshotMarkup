@@ -28,9 +28,9 @@ permissions:
   contents: read
 
 env:
-  APP_ID: io.github.OWNER.ScreenshotMarkup
-  MANIFEST: packaging/flatpak/io.github.OWNER.ScreenshotMarkup.yml
-  # Set to "1" (repo variable LINT_STRICT) once OWNER is replaced and the repo is public.
+  APP_ID: io.github.patsinclair1.ScreenshotMarkup
+  MANIFEST: packaging/flatpak/io.github.patsinclair1.ScreenshotMarkup.yml
+  # Set to "1" (repo variable LINT_STRICT) once patsinclair1 is replaced and the repo is public.
   LINT_STRICT: ${{ vars.LINT_STRICT || '0' }}
 
 jobs:
