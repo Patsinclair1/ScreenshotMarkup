@@ -1,0 +1,10 @@
+{
+  "uuid": "screenshot-markup@OWNER.github.io",
+  "name": "Screenshot Markup: Edit button",
+  "description": "Adds an Edit button next to 'Show in Files' on GNOME's screenshot notification and opens the capture in the Screenshot Markup app (install it separately, e.g. from Flathub).",
+  "shell-version": [
+    "50"
+  ],
+  "version-name": "0.1.0",
+  "url": "https://github.com/OWNER/screenshot-markup"
+}

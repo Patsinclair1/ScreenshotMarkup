@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Screenshot Markup
+Comment=Draw, highlight and read text on screenshots
+Exec=screenshot-markup %F
+Icon=io.github.OWNER.ScreenshotMarkup
+MimeType=image/png;image/jpeg;image/webp;
+Categories=Graphics;2DGraphics;RasterGraphics;GTK;
+Keywords=screenshot;annotate;highlight;markup;draw;ocr;
+StartupNotify=true
+Terminal=false

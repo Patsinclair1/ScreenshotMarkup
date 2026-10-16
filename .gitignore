@@ -1,0 +1,12 @@
+.flatpak-builder/
+packaging/flatpak/build/
+packaging/flatpak/repo/
+build/
+repo/
+*.flatpak
+*.snap
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+*.bak*

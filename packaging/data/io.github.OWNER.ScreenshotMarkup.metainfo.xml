@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- TODO(paddy): replace OWNER with your GitHub user/org (or a domain you control) everywhere. -->
+<component type="desktop-application">
+  <id>io.github.OWNER.ScreenshotMarkup</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Screenshot Markup</name>
+  <summary>Draw, highlight and read text on screenshots</summary>
+  <developer id="io.github.owner">
+    <name>OWNER</name>
+  </developer>
+  <description>
+    <p>A small, fast annotator for screenshots. Open a capture, mark it up, then save a copy or copy it straight to the clipboard.</p>
+    <ul>
+      <li>Freehand pen and a see-through highlighter that keeps text readable</li>
+      <li>Rectangles, ellipses, arrows and lines</li>
+      <li>Movable, resizable, editable text boxes</li>
+      <li>An eraser that only removes your marks, never the screenshot</li>
+      <li>Transcript: reads the text in the image and makes links clickable</li>
+      <li>Zoom, pan, undo, and a choice of canvas background</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">io.github.OWNER.ScreenshotMarkup.desktop</launchable>
+  <url type="homepage">https://github.com/OWNER/screenshot-markup</url>
+  <url type="bugtracker">https://github.com/OWNER/screenshot-markup/issues</url>
+  <url type="vcs-browser">https://github.com/OWNER/screenshot-markup</url>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Marking up a screenshot</caption>
+      <image>https://raw.githubusercontent.com/OWNER/screenshot-markup/main/screenshots/main.png</image>
+    </screenshot>
+  </screenshots>
+  <content_rating type="oars-1.1"/>
+  <branding>
+    <color type="primary" scheme_preference="light">#e8eef5</color>
+    <color type="primary" scheme_preference="dark">#3d4a5c</color>
+  </branding>
+  <supports><control>pointing</control><control>keyboard</control></supports>
+  <provides><mediatype>image/png</mediatype></provides>
+  <categories><category>Graphics</category></categories>
+  <keywords><keyword>screenshot</keyword><keyword>annotate</keyword><keyword>highlight</keyword><keyword>OCR</keyword></keywords>
+  <releases>
+    <release version="0.1.0" date="2026-10-16"><description><p>First public release.</p></description></release>
+  </releases>
+</component>

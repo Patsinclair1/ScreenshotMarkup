@@ -1,0 +1,84 @@
+# Flathub manifest for Screenshot Markup.
+# TODO(paddy): replace OWNER with your GitHub user/org (must match a code host or domain you control).
+# For Flathub submission, switch the app module source from `dir` to a `git` source with tag + commit.
+id: io.github.OWNER.ScreenshotMarkup
+runtime: org.gnome.Platform
+runtime-version: '50'
+sdk: org.gnome.Sdk
+command: screenshot-markup
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=dri
+  # Opens/saves next to captures in ~/Pictures/Screenshots and opens the newest one on launch.
+  # Files opened via "Open With" / the file chooser work through the document portal anyway.
+  - --filesystem=xdg-pictures
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /lib/cmake
+  - /share/man
+  - '*.a'
+  - '*.la'
+modules:
+  - name: leptonica
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_SHARED_LIBS=ON
+      - -DBUILD_PROG=OFF
+      - -DSW_BUILD=OFF
+    sources:
+      - type: archive
+        url: https://github.com/DanBloomberg/leptonica/releases/download/1.85.0/leptonica-1.85.0.tar.gz
+        sha256: 3745ae3bf271a6801a2292eead83ac926e3a9bc1bf622e9cd4dd0f3786e17205
+
+  - name: tesseract
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_SHARED_LIBS=ON
+      - -DBUILD_TRAINING_TOOLS=OFF
+      - -DBUILD_TESTS=OFF
+      - -DGRAPHICS_DISABLED=ON
+      - -DDISABLE_ARCHIVE=ON
+      - -DDISABLE_CURL=ON
+      - -DOPENMP_BUILD=OFF
+      - -DENABLE_NATIVE=OFF
+      - -DSW_BUILD=OFF
+    sources:
+      - type: archive
+        url: https://github.com/tesseract-ocr/tesseract/archive/refs/tags/5.5.1.tar.gz
+        sha256: a7a3f2a7420cb6a6a94d80c24163e183cf1d2f1bed2df3bbc397c81808a57237
+
+  - name: tessdata-eng
+    buildsystem: simple
+    build-commands:
+      - install -Dm644 eng.traineddata /app/share/tessdata/eng.traineddata
+    sources:
+      - type: file
+        url: https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/eng.traineddata
+        sha256: 7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2
+
+  - name: screenshot-markup
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 markup.py /app/share/screenshot-markup/markup.py
+      - sed -i 's/^APP_ID = .*/APP_ID = "io.github.OWNER.ScreenshotMarkup"/' /app/share/screenshot-markup/markup.py
+      - printf '#!/bin/sh\nexport TESSDATA_PREFIX=/app/share/tessdata\nexec python3 /app/share/screenshot-markup/markup.py "$@"\n' > /app/bin/screenshot-markup
+      - chmod 755 /app/bin/screenshot-markup
+      - install -Dm644 packaging/data/${FLATPAK_ID}.desktop -t /app/share/applications
+      - install -Dm644 packaging/data/${FLATPAK_ID}.metainfo.xml -t /app/share/metainfo
+      - install -Dm644 packaging/data/${FLATPAK_ID}.svg -t /app/share/icons/hicolor/scalable/apps
+      - for s in 128 256 512; do install -Dm644 packaging/data/${FLATPAK_ID}-$s.png /app/share/icons/hicolor/${s}x${s}/apps/${FLATPAK_ID}.png; done
+    sources:
+      - type: dir
+        path: ../..
+        skip:
+          - .flatpak-builder
+          - packaging/flatpak/build
+          - packaging/flatpak/repo
+          - __pycache__

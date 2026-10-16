@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "*.py"
+      - "tests/**"
+      - "packaging/**"
+      - "pytest.ini"
+      - "requirements-ci.txt"
+      - ".github/**"
+  pull_request:
+    paths:
+      - "*.py"
+      - "tests/**"
+      - "packaging/**"
+      - "pytest.ini"
+      - "requirements-ci.txt"
+      - ".github/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  APP_ID: io.github.OWNER.ScreenshotMarkup
+  MANIFEST: packaging/flatpak/io.github.OWNER.ScreenshotMarkup.yml
+  # Set to "1" (repo variable LINT_STRICT) once OWNER is replaced and the repo is public.
+  LINT_STRICT: ${{ vars.LINT_STRICT || '0' }}
+
+jobs:
+  flatpak:
+    name: Flatpak (GNOME 50)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    container:
+      # The old bilelmoussaoui/flatpak-github-actions images moved to flathub-infra.
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-50
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: ${{ env.MANIFEST }}
+          bundle: screenshot-markup.flatpak
+          cache-key: flatpak-builder-${{ hashFiles('packaging/flatpak/*.yml') }}
+          upload-artifact: true
+      - name: Lint manifest
+        run: bash .github/scripts/flatpak-lint.sh manifest "$MANIFEST"
+      - name: Lint repo
+        run: bash .github/scripts/flatpak-lint.sh repo repo
+
+  linux-native:
+    name: Linux native (Ubuntu 24.04, GTK 4.14)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system packages
+        # Distro PyGObject so gi matches the system GTK (Ubuntu 24.04 ships GTK 4.14 / 3.24;
+        # bazzite and GNOME 50 are on GTK 4.20+, so newer-only GTK APIs may differ here).
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends python3-gi python3-gi-cairo python3-cairo gir1.2-gtk-4.0 \
+            python3-pytest python3-websocket xvfb xauth appstream desktop-file-utils
+      - name: Tests (xvfb)
+        run: xvfb-run -a python3 -m pytest -v
+      - name: Validate metainfo
+        run: appstreamcli validate --no-net --explain "packaging/data/$APP_ID.metainfo.xml"
+      - name: Validate desktop file
+        run: desktop-file-validate "packaging/data/$APP_ID.desktop"
+
+  portable:
+    name: Portable smoke (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+      - run: python -m pip install -r requirements-ci.txt
+      - name: Byte-compile
+        run: python -m compileall -q markup.py tests
+      - name: Tests (GTK/D-Bus tests skip with reasons)
+        run: python -m pytest -v

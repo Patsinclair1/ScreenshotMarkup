@@ -1,0 +1,6 @@
+{
+  "uuid": "screenshot-markup@paddy.dev",
+  "name": "Screenshot Markup: Edit button",
+  "description": "Adds an Edit action to GNOME's 'Screenshot captured' notification that opens the screenshot in Screenshot Markup.",
+  "shell-version": ["50"]
+}

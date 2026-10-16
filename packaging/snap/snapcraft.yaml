@@ -1,0 +1,32 @@
+# Optional Snap. Untested build (needs snapcraft + LXD, not on Bazzite by default).
+name: screenshot-markup   # TODO(paddy): register the name in the Snap Store
+base: core24
+version: '0.1.0'
+summary: Draw, highlight and read text on screenshots
+description: |
+  A small annotator for screenshots: pen, see-through highlighter, shapes, text,
+  eraser, OCR transcript with clickable links, zoom, undo, save and copy.
+grade: stable
+confinement: strict
+license: MIT
+platforms:
+  amd64:
+apps:
+  screenshot-markup:
+    command: bin/screenshot-markup
+    extensions: [gnome]          # GTK4 + PyGObject from the gnome-46 content snap
+    plugs: [home, removable-media]
+    environment:
+      TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/5/tessdata
+parts:
+  app:
+    plugin: dump
+    source: ../..
+    stage-packages: [tesseract-ocr, tesseract-ocr-eng, python3-gi, python3-gi-cairo, python3-cairo]
+    override-build: |
+      install -Dm755 markup.py $CRAFT_PART_INSTALL/share/screenshot-markup/markup.py
+      mkdir -p $CRAFT_PART_INSTALL/bin
+      printf '#!/bin/sh\nexec python3 $SNAP/share/screenshot-markup/markup.py "$@"\n' > $CRAFT_PART_INSTALL/bin/screenshot-markup
+      chmod 755 $CRAFT_PART_INSTALL/bin/screenshot-markup
+      install -Dm644 packaging/data/io.github.OWNER.ScreenshotMarkup.svg $CRAFT_PART_INSTALL/meta/gui/icon.svg
+    stage: [bin, share, usr, meta]
