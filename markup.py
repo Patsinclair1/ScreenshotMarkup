@@ -828,20 +828,48 @@ class Win(Gtk.ApplicationWindow):
         d.save(self, None, cb)
 
     def copy(self):
-        # Gdk.Clipboard.set_texture() is not exposed to Python on Wayland (the
-        # old call raised AttributeError, leaving GNOME's original screenshot on
-        # the clipboard). Publish both a texture and PNG bytes via ContentProvider.
+        """Copy the SAME flattened image Save writes (export_png_bytes) to the clipboard.
+
+        GTK's Gdk.Clipboard.set_content() was silently not taking ownership on
+        GNOME/Wayland, so pasting returned GNOME's own screenshot clipboard entry
+        (the original, without annotations). Prefer wl-copy, which owns the
+        selection in its own process (also survives closing the editor), and fall
+        back to a Gdk.Texture built from the flattened PNG bytes.
+        """
         try:
             png = self.export_png_bytes()
+        except Exception as e:
+            self.say(f"Copy failed: {e}"); print("copy failed:", e, file=sys.stderr); return False
+        if copy_png_wl(png):
+            self.say("Copied to clipboard"); return True
+        try:
             tex = Gdk.Texture.new_from_bytes(GLib.Bytes.new(png))
             prov = Gdk.ContentProvider.new_union([
-                Gdk.ContentProvider.new_for_value(tex),
-                Gdk.ContentProvider.new_for_bytes("image/png", GLib.Bytes.new(png))])
+                Gdk.ContentProvider.new_for_bytes("image/png", GLib.Bytes.new(png)),
+                Gdk.ContentProvider.new_for_value(tex)])
             self.get_display().get_clipboard().set_content(prov)
             self._clip_provider = prov
             self.say("Copied to clipboard"); return True
         except Exception as e:
             self.say(f"Copy failed: {e}"); print("copy failed:", e, file=sys.stderr); return False
+
+
+def copy_png_wl(png):
+    """Put PNG bytes on the Wayland clipboard with wl-copy. True on success."""
+    import shutil, subprocess, tempfile
+    exe = shutil.which("wl-copy")
+    if not exe or not os.environ.get("WAYLAND_DISPLAY"):
+        return False
+    try:
+        with tempfile.TemporaryFile() as f:
+            f.write(png); f.seek(0)
+            r = subprocess.run([exe, "--type", "image/png"], stdin=f, timeout=10,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        if r.returncode != 0:
+            print("wl-copy failed:", r.stderr.decode(errors="replace"), file=sys.stderr)
+        return r.returncode == 0
+    except Exception as e:
+        print("wl-copy failed:", e, file=sys.stderr); return False
 
 
 class App(Gtk.Application):
