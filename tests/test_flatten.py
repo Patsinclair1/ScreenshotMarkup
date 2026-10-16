@@ -2,8 +2,9 @@
 import io
 import types
 
-import cairo
 import pytest
+
+cairo = pytest.importorskip("cairo", reason="requires GTK/Wayland: pycairo (Linux GTK build) not installed")
 
 pytestmark = pytest.mark.gtk
 W, H = 320, 200
