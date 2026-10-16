@@ -11,6 +11,15 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const shellGettext = s => Gettext.domain('gnome-shell').gettext(s);
 const APP = GLib.build_filenamev([GLib.get_home_dir(), '.local', 'bin', 'screenshot-markup']);
+const FLATPAK_ID = 'io.github.patsinclair1.ScreenshotMarkup';
+
+// Native install (~/.local/bin script) if present, otherwise the Flatpak.
+function editorArgv(path) {
+    if (GLib.file_test(APP, GLib.FileTest.IS_EXECUTABLE))
+        return [APP, path];
+    const flatpak = GLib.find_program_in_path('flatpak') ?? '/usr/bin/flatpak';
+    return [flatpak, 'run', FLATPAK_ID, path];
+}
 
 function newestScreenshot() {
     const pics = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) ??
@@ -56,7 +65,7 @@ export default class ScreenshotMarkupExtension extends Extension {
                         this.isTransient = false;   // keep it in the message tray
                         orig.call(this, 'Edit', () => {
                             try {
-                                Gio.Subprocess.new([APP, file.get_path()], Gio.SubprocessFlags.NONE);
+                                Gio.Subprocess.new(editorArgv(file.get_path()), Gio.SubprocessFlags.NONE);
                             } catch (e) {
                                 logError(e, 'screenshot-markup: launch failed');
                             }

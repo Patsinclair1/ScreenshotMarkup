@@ -14,6 +14,8 @@ finish-args:
   # Opens/saves next to captures in ~/Pictures/Screenshots and opens the newest one on launch.
   # Files opened via "Open With" / the file chooser work through the document portal anyway.
   - --filesystem=xdg-pictures
+  # Bundled OCR data (tessdata module below), so OCR works however the app is launched.
+  - --env=TESSDATA_PREFIX=/app/share/tessdata
 cleanup:
   - /include
   - /lib/pkgconfig
